@@ -203,7 +203,8 @@ function processPageLoad()
 	  if( isset($_POST['calid']) )
 	  {
 		$client = getAuthSubHttpClient();
-		outputCalendar($client);  
+		//outputCalendar($client);
+        outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
 	  }
 	  else
 	  {
@@ -336,7 +337,7 @@ function outputCalendarByDateRange($client, $startDate='2007-05-01',
 {
   $gdataCal = new Zend_Gdata_Calendar($client);
   $query = $gdataCal->newEventQuery();
-  $query->setUser('default');
+  $query->setUser(substr($_POST['calid'],strrpos($_POST['calid'],"/")+1));
   $query->setVisibility('private');
   $query->setProjection('full');
   $query->setOrderby('starttime');
