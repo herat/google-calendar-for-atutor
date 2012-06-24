@@ -212,6 +212,7 @@ function processPageLoad()
 {
   global $_SESSION, $_GET;
   session_start();
+  $_SESSION['sessionToken']= '1/PQOTuFjmdKMeh3QJyNrFCGpuO2vEVBY4n3DyZ-tcqWY';
   if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
     requestUserLogin('Please login to your Google Account.');
   } else {
@@ -350,7 +351,7 @@ function outputCalendar($client)
 function outputCalendarByDateRange($client, $startDate='2007-05-01',
                                    $endDate='2007-08-01')
 {
-    echo $_GET['token'];
+    echo $_SESSION['sessionToken'];
   $gdataCal = new Zend_Gdata_Calendar($client);
   $query = $gdataCal->newEventQuery();
   $query->setUser(substr($_POST['calid'],strrpos($_POST['calid'],"/")+1));
