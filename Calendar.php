@@ -212,9 +212,20 @@ function processPageLoad()
 {
   global $_SESSION, $_GET;
   session_start();
-  $_SESSION['sessionToken']= '1/PQOTuFjmdKMeh3QJyNrFCGpuO2vEVBY4n3DyZ-tcqWY';
+  
+  $db = mysql_connect('localhost','root','root');
+  mysql_select_db('test',$db);
+  $qry = "SELECT * FROM test_session";
+  $res = mysql_query($qry,$db);
+  if( mysql_num_rows($res) > 0 )
+  {
+	$row = mysql_fetch_assoc($res);
+	$_SESSION['sessionToken'] = $row['sessionkey'];
+  }
+  //$_SESSION['sessionToken']= '1/PQOTuFjmdKMeh3QJyNrFCGpuO2vEVBY4n3DyZ-tcqWY';
+
   if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
-    requestUserLogin('Please login to your Google Account.');
+    requestUserLogin('Please login to your Google Account.');	
   } else {
 	  if( isset($_POST['calid']) )
 	  {
@@ -224,8 +235,15 @@ function processPageLoad()
 	  }
 	  else
 	  {
-    	$client = getAuthSubHttpClient();
-    	outputCalendarList($client);
+		$client = getAuthSubHttpClient();
+		outputCalendarList($client);
+		if( mysql_num_rows($res) <= 0 )
+		{
+			$db = mysql_connect('localhost','root','root');
+    		mysql_select_db('test',$db);
+    		$qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
+    		$res = mysql_query($qry,$db);
+		}
 	  }
   }
 }
