@@ -179,9 +179,24 @@ function getAuthSubHttpClient()
     $client->setAuthSubPrivateKeyFile($_authSubKeyFile, $_authSubKeyFilePassphrase, true);
   }
   if (!isset($_SESSION['sessionToken']) && isset($_GET['token'])) {
-    $_SESSION['sessionToken'] =
+      /*$db = mysql_connect('localhost','root','root');
+      mysql_select_db('test',$db);
+      $qry = "INSERT INTO test_session values ('".Zend_Gdata_AuthSub::getAuthSubSessionToken($_GET['token'], $client)."')";
+      $res = mysql_query($qry,$db);*/
+
+      $_SESSION['sessionToken'] =
         Zend_Gdata_AuthSub::getAuthSubSessionToken($_GET['token'], $client);
   }
+  /*else if( !isset($_SESSION['sessionToken']) && !isset($_GET['token']) ){
+      $db = mysql_connect('localhost','root','root');
+      mysql_select_db('test',$db);
+      $qry = "SELECT * FROM test_session";
+      $res = mysql_query($qry,$db);
+      $row = mysql_fetch_assoc($res);
+
+      $_SESSION['sessionToken'] = $row['sessionkey'];
+  }*/
+
   $client->setAuthSubToken($_SESSION['sessionToken']);
   return $client;
 }
@@ -335,6 +350,7 @@ function outputCalendar($client)
 function outputCalendarByDateRange($client, $startDate='2007-05-01',
                                    $endDate='2007-08-01')
 {
+    echo $_GET['token'];
   $gdataCal = new Zend_Gdata_Calendar($client);
   $query = $gdataCal->newEventQuery();
   $query->setUser(substr($_POST['calid'],strrpos($_POST['calid'],"/")+1));
