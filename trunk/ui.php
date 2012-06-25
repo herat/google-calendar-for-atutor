@@ -197,37 +197,52 @@ function processPageLoad()
 {
     global $_SESSION, $_GET;
     session_start();
-
-    $db = mysql_connect('localhost','root','root');
-    mysql_select_db('test',$db);
-    $qry = "SELECT * FROM test_session";
-    $res = mysql_query($qry,$db);
-    if( mysql_num_rows($res) > 0 )
+    if( isset($_GET['logout']) )
     {
-      $row = mysql_fetch_assoc($res);
-      $_SESSION['sessionToken'] = $row['sessionkey'];
-    }
-
-    if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
-        requestUserLogin('Please login to your Google Account.');
-    } else {
-        if( isset($_POST['calid']) )
+        $db = mysql_connect('localhost','root','root');
+        mysql_select_db('test',$db);
+        $qry = "SELECT * FROM test_session";
+        $res = mysql_query($qry,$db);
+        if( mysql_num_rows($res) > 0 )
         {
-            $client = getAuthSubHttpClient();
-            outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
+          $qry = "DELETE FROM test_session";
+          mysql_query($qry,$db);
+          logout();
         }
-        else
+    }
+    else
+    {
+        $db = mysql_connect('localhost','root','root');
+        mysql_select_db('test',$db);
+        $qry = "SELECT * FROM test_session";
+        $res = mysql_query($qry,$db);
+        if( mysql_num_rows($res) > 0 )
         {
-            $client = getAuthSubHttpClient();
-            if( mysql_num_rows($res) <= 0 )
-           {
-               $db = mysql_connect('localhost','root','root');
-               mysql_select_db('test',$db);
-               $qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
-               $res = mysql_query($qry,$db);
-           }
-            echo "<script>window.opener.location.reload(false);window.close();</script>";
-            outputCalendarList($client);            
+          $row = mysql_fetch_assoc($res);
+          $_SESSION['sessionToken'] = $row['sessionkey'];
+        }
+
+        if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
+            requestUserLogin('Please login to your Google Account.');
+        } else {
+            if( isset($_POST['calid']) )
+            {
+                $client = getAuthSubHttpClient();
+                outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
+            }
+            else
+            {
+                $client = getAuthSubHttpClient();
+                if( mysql_num_rows($res) <= 0 )
+               {
+                   $db = mysql_connect('localhost','root','root');
+                   mysql_select_db('test',$db);
+                   $qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
+                   $res = mysql_query($qry,$db);
+               }
+                echo "<script>window.opener.location.reload(false);window.close();</script>";
+                outputCalendarList($client);            
+            }
         }
     }
 }
@@ -260,7 +275,8 @@ function outputCalendarList($client)
 {
     $gdataCal = new Zend_Gdata_Calendar($client);
     $calFeed = $gdataCal->getCalendarListFeed();
-    echo "<form method='post' action='' onsubmit='window.opener.location.reload(false);window.close();'>";
+    echo "<a href='http://localhost/tmpp/google-calendar-for-atutor/ui.php?logout=true' >Logout</a><br/>
+    <form method='post' action='' onsubmit='window.opener.location.reload(false);window.close();'>";
     echo "<h1>" . $calFeed->title->text . "</h1>\n";
     echo "<ul>\n";
     foreach ($calFeed as $calendar) {
@@ -294,7 +310,7 @@ function outputCalendar($client)
     $eventFeed = $gdataCal->getCalendarEventFeed($query);
     // option 2
     // $eventFeed = $gdataCal->getCalendarEventFeed($query->getQueryUrl());
-    echo "<ul>\n";
+    echo "<a href='http://localhost/tmpp/google-calendar-for-atutor/ui.php?logout=true' >Logout</a><br/><ul>\n";
     foreach ($eventFeed as $event) {
         echo "\t<li>" . $event->title->text .  " (" . $event->id->text . ")\n";
         // Zend_Gdata_App_Extensions_Title->__toString() is defined, so the
@@ -338,7 +354,7 @@ function outputCalendarByDateRange($client, $startDate='2007-05-01',
     $query->setStartMin($startDate);
     $query->setStartMax($endDate);
     $eventFeed = $gdataCal->getCalendarEventFeed($query);
-    echo "<ul>\n";
+    echo "<a href='http://localhost/tmpp/google-calendar-for-atutor/ui.php?logout=true' >Logout</a><br/><ul>\n";
     foreach ($eventFeed as $event) {
         echo "\t<li>" . $event->title->text .  " (" . $event->id->text . ")\n";
         echo "\t\t<ul>\n";
@@ -350,5 +366,22 @@ function outputCalendarByDateRange($client, $startDate='2007-05-01',
     }
     echo "</ul>\n";
 }
+
+function logout()
+{
+    // Carefully construct this value to avoid application security problems.
+    $php_self = htmlentities(substr($_SERVER['PHP_SELF'],
+                             0,
+                             strcspn($_SERVER['PHP_SELF'], "\n\r")),
+                             ENT_QUOTES);
+     
+    if (isset($_GET['logout'])) {
+        Zend_Gdata_AuthSub::AuthSubRevokeToken($_SESSION['sessionToken']);
+        unset($_SESSION['sessionToken']);
+        header('Location: ' . $php_self);
+        exit();
+    }
+}
+
 processPageLoad();
 ?>
