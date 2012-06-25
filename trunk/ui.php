@@ -185,7 +185,28 @@ function getAuthSubHttpClient()
     $client->setAuthSubToken($_SESSION['sessionToken']);
     return $client;
 }
-
+function isvalidtoken( $tokent )
+{
+    try
+    {
+        $client = getAuthSubHttpClient();
+        outputCalendarListCheck($client);
+        return true;
+    }
+    catch( Zend_Gdata_App_HttpException $e )
+    {
+        $db = mysql_connect('localhost','root','root');
+        mysql_select_db('test',$db);
+        $qry = "SELECT * FROM test_session";
+        $res = mysql_query($qry,$db);
+        if( mysql_num_rows($res) > 0 )
+        {
+          $qry = "DELETE FROM test_session";
+          mysql_query($qry,$db);          
+        }
+        logout();
+    }
+}
 /**
  * Processes loading of this sample code through a web browser.  Uses AuthSub
  * authentication and outputs a list of a user's calendars if succesfully
@@ -206,9 +227,9 @@ function processPageLoad()
         if( mysql_num_rows($res) > 0 )
         {
           $qry = "DELETE FROM test_session";
-          mysql_query($qry,$db);
-          logout();
+          mysql_query($qry,$db);          
         }
+        logout();
     }
     else
     {
@@ -225,23 +246,26 @@ function processPageLoad()
         if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
             requestUserLogin('Please login to your Google Account.');
         } else {
-            if( isset($_POST['calid']) )
+            if( isset($_GET['token']) || ( isset($_SESSION['sessionToken']) && isvalidtoken($_SESSION['sessionToken']) ) )
             {
-                $client = getAuthSubHttpClient();
-                outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
-            }
-            else
-            {
-                $client = getAuthSubHttpClient();
-                if( mysql_num_rows($res) <= 0 )
-               {
-                   $db = mysql_connect('localhost','root','root');
-                   mysql_select_db('test',$db);
-                   $qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
-                   $res = mysql_query($qry,$db);
-               }
-                echo "<script>window.opener.location.reload(false);window.close();</script>";
-                outputCalendarList($client);            
+                if( isset($_POST['calid']) )
+                {
+                    $client = getAuthSubHttpClient();
+                    outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
+                }
+                else
+                {
+                    $client = getAuthSubHttpClient();
+                    if( mysql_num_rows($res) <= 0 )
+                   {
+                       $db = mysql_connect('localhost','root','root');
+                       mysql_select_db('test',$db);
+                       $qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
+                       $res = mysql_query($qry,$db);
+                   }
+                    echo "<script>window.opener.location.reload(false);window.close();</script>";
+                    outputCalendarList($client);            
+                }
             }
         }
     }
@@ -263,7 +287,11 @@ function getClientLoginHttpClient($user, $pass)
     return $client;
 }
 
-
+function outputCalendarListCheck($client)
+{
+    $gdataCal = new Zend_Gdata_Calendar($client);
+    $calFeed = $gdataCal->getCalendarListFeed();
+}
 /**
  * Outputs an HTML unordered list (ul), with each list item representing a
  * calendar in the authenticated user's calendar list.
@@ -375,12 +403,10 @@ function logout()
                              strcspn($_SERVER['PHP_SELF'], "\n\r")),
                              ENT_QUOTES);
      
-    if (isset($_GET['logout'])) {
-        Zend_Gdata_AuthSub::AuthSubRevokeToken($_SESSION['sessionToken']);
-        unset($_SESSION['sessionToken']);
-        header('Location: ' . $php_self);
-        exit();
-    }
+    Zend_Gdata_AuthSub::AuthSubRevokeToken($_SESSION['sessionToken']);
+    unset($_SESSION['sessionToken']);
+    header('Location: ' . $php_self);
+    exit();
 }
 
 processPageLoad();
