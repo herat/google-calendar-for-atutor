@@ -179,24 +179,9 @@ function getAuthSubHttpClient()
     $client->setAuthSubPrivateKeyFile($_authSubKeyFile, $_authSubKeyFilePassphrase, true);
   }
   if (!isset($_SESSION['sessionToken']) && isset($_GET['token'])) {
-      /*$db = mysql_connect('localhost','root','root');
-      mysql_select_db('test',$db);
-      $qry = "INSERT INTO test_session values ('".Zend_Gdata_AuthSub::getAuthSubSessionToken($_GET['token'], $client)."')";
-      $res = mysql_query($qry,$db);*/
-
-      $_SESSION['sessionToken'] =
+     $_SESSION['sessionToken'] =
         Zend_Gdata_AuthSub::getAuthSubSessionToken($_GET['token'], $client);
   }
-  /*else if( !isset($_SESSION['sessionToken']) && !isset($_GET['token']) ){
-      $db = mysql_connect('localhost','root','root');
-      mysql_select_db('test',$db);
-      $qry = "SELECT * FROM test_session";
-      $res = mysql_query($qry,$db);
-      $row = mysql_fetch_assoc($res);
-
-      $_SESSION['sessionToken'] = $row['sessionkey'];
-  }*/
-
   $client->setAuthSubToken($_SESSION['sessionToken']);
   return $client;
 }
@@ -213,7 +198,7 @@ function processPageLoad()
   global $_SESSION, $_GET;
   session_start();
   
-  $db = mysql_connect('localhost','root','root');
+  /*$db = mysql_connect('localhost','root','root');
   mysql_select_db('test',$db);
   $qry = "SELECT * FROM test_session";
   $res = mysql_query($qry,$db);
@@ -221,8 +206,7 @@ function processPageLoad()
   {
 	$row = mysql_fetch_assoc($res);
 	$_SESSION['sessionToken'] = $row['sessionkey'];
-  }
-  //$_SESSION['sessionToken']= '1/PQOTuFjmdKMeh3QJyNrFCGpuO2vEVBY4n3DyZ-tcqWY';
+  }*/
 
   if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
     requestUserLogin('Please login to your Google Account.');	
@@ -230,20 +214,19 @@ function processPageLoad()
 	  if( isset($_POST['calid']) )
 	  {
 		$client = getAuthSubHttpClient();
-		//outputCalendar($client);
-        outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
+		outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
 	  }
 	  else
 	  {
 		$client = getAuthSubHttpClient();
 		outputCalendarList($client);
-		if( mysql_num_rows($res) <= 0 )
+		/*if( mysql_num_rows($res) <= 0 )
 		{
 			$db = mysql_connect('localhost','root','root');
     		mysql_select_db('test',$db);
     		$qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
     		$res = mysql_query($qry,$db);
-		}
+		}*/
 	  }
   }
 }
