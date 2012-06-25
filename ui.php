@@ -219,6 +219,7 @@ function processPageLoad()
         else
         {
             $client = getAuthSubHttpClient();
+            echo "<script>window.opener.location.reload(false);window.close();</script>";
             outputCalendarList($client);
             /*if( mysql_num_rows($res) <= 0 )
            {
@@ -284,7 +285,7 @@ function outputCalendarList($client)
 {
     $gdataCal = new Zend_Gdata_Calendar($client);
     $calFeed = $gdataCal->getCalendarListFeed();
-    echo "<form method='post' action='' onsubmit='window.close();window.opener.location.reaload(false);'>";
+    echo "<form method='post' action='' onsubmit='window.opener.location.reload(false);window.close();'>";
     echo "<h1>" . $calFeed->title->text . "</h1>\n";
     echo "<ul>\n";
     foreach ($calFeed as $calendar) {
