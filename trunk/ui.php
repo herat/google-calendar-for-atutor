@@ -198,7 +198,7 @@ function processPageLoad()
     global $_SESSION, $_GET;
     session_start();
 
-    /*$db = mysql_connect('localhost','root','root');
+    $db = mysql_connect('localhost','root','root');
     mysql_select_db('test',$db);
     $qry = "SELECT * FROM test_session";
     $res = mysql_query($qry,$db);
@@ -206,7 +206,7 @@ function processPageLoad()
     {
       $row = mysql_fetch_assoc($res);
       $_SESSION['sessionToken'] = $row['sessionkey'];
-    }*/
+    }
 
     if (!isset($_SESSION['sessionToken']) && !isset($_GET['token'])) {
         requestUserLogin('Please login to your Google Account.');
@@ -219,15 +219,15 @@ function processPageLoad()
         else
         {
             $client = getAuthSubHttpClient();
-            echo "<script>window.opener.location.reload(false);window.close();</script>";
-            outputCalendarList($client);
-            /*if( mysql_num_rows($res) <= 0 )
+            if( mysql_num_rows($res) <= 0 )
            {
                $db = mysql_connect('localhost','root','root');
                mysql_select_db('test',$db);
                $qry = "INSERT INTO test_session values ('".$_SESSION['sessionToken']."')";
                $res = mysql_query($qry,$db);
-           }*/
+           }
+            echo "<script>window.opener.location.reload(false);window.close();</script>";
+            outputCalendarList($client);            
         }
     }
 }
