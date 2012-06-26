@@ -388,7 +388,7 @@ function outputCalendarByDateRange($client, $startDate='2007-05-01',
         $eventID = "";
         for($i=0;$i<7;$i++)
         {
-            $eventID .= $event->id->text[rand(0,strlen($event->id->text))];
+            $eventID .= $event->id->text[rand(0,strlen($event->id->text)-1)];
         }
 
         echo "\t<li>" . $event->title->text .  " (" . $eventID . ")\n";
