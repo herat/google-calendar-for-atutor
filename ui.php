@@ -251,7 +251,7 @@ function processPageLoad()
                 if( isset($_POST['calid']) )
                 {
                     $client = getAuthSubHttpClient();
-                    outputCalendarByDateRange($client,'2012-06-01','2012-06-30');
+                    outputCalendarByDateRange($client,'2007-06-01','2015-08-31');
                 }
                 else
                 {
@@ -384,10 +384,36 @@ function outputCalendarByDateRange($client, $startDate='2007-05-01',
     $eventFeed = $gdataCal->getCalendarEventFeed($query);
     echo "<a href='http://localhost/tmpp/google-calendar-for-atutor/ui.php?logout=true' >Logout</a><br/><ul>\n";
     foreach ($eventFeed as $event) {
-        echo "\t<li>" . $event->title->text .  " (" . $event->id->text . ")\n";
+
+        $eventID = "";
+        for($i=0;$i<7;$i++)
+        {
+            $eventID .= $event->id->text[rand(0,strlen($event->id->text))];
+        }
+
+        echo "\t<li>" . $event->title->text .  " (" . $eventID . ")\n";
         echo "\t\t<ul>\n";
         foreach ($event->when as $when) {
-            echo "\t\t\t<li>Starts: " . $when->startTime . "</li>\n";
+            $startD = substr($when->startTime,0,19);
+            $startD = str_replace("T"," ",$startD);
+
+            $endD = substr($when->endTime,0,19);
+            $endD = str_replace("T"," ",$endD);
+
+            /*
+             * If both start time and end time are different and their time parts differ then allDay is false
+             */
+            if( ($startD != $endD) && substr($startD,0,10) == substr($endD,0,10) )
+            {
+                $allDay = 'false';
+            }
+            else
+            {
+                $allDay = 'true';
+            }
+            echo "\t\t\t<li>Starts: " . $startD . "</li>\n";
+            echo "\t\t\t<li>Ends:". $endD ."</li>\n";
+            echo "\t\t\t<li>allDay:". $allDay ."</li>\n";
         }
         echo "\t\t</ul>\n";
         echo "\t</li>\n";
